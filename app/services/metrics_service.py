@@ -1,6 +1,5 @@
-import subprocess
 import re
-from pathlib import Path
+import subprocess
 
 
 def run_command(command: list[str]) -> subprocess.CompletedProcess:
@@ -31,26 +30,35 @@ def get_complexity() -> float | None:
         return None
 
     match = re.search(
-        r"Average complexity:\s*([A-Z])\s*\(([\d.]+)\)",
+        r"Average complexity:\s*[A-Z]\s*\(([\d.]+)\)",
         result.stdout
     )
 
     if not match:
         return None
 
-    return float(match.group(2))
+    return float(match.group(1))
 
 
-def get_test_results() -> tuple[int, int]:
+def get_test_metrics() -> tuple[int, int, float | None]:
+
     result = run_command(
         [
+            "python",
+            "-m",
             "pytest",
+            "--cov=app",
+            "--cov-report=term-missing",
             "--tb=no",
             "-q"
         ]
     )
 
     output = result.stdout + result.stderr
+
+    # -------------------------
+    # Test results
+    # -------------------------
 
     passed_match = re.search(
         r"(\d+)\s+passed",
@@ -74,30 +82,22 @@ def get_test_results() -> tuple[int, int]:
         else 0
     )
 
-    return passed, failed
+    # -------------------------
+    # Coverage
+    # -------------------------
 
-
-def get_test_coverage() -> float | None:
-    result = run_command(
-        [
-            "pytest",
-            "--cov=app",
-            "--cov-report=term-missing",
-            "-q"
-        ]
-    )
-
-    output = result.stdout + result.stderr
-
-    match = re.search(
-        r"TOTAL\s+\d+\s+\d+\s+\d+\s+(\d+)%",
+    coverage_match = re.search(
+        r"TOTAL\s+\d+\s+\d+\s+(\d+)%",
         output
     )
 
-    if not match:
-        return None
+    coverage = (
+        float(coverage_match.group(1))
+        if coverage_match
+        else None
+    )
 
-    return float(match.group(1))
+    return passed, failed, coverage
 
 
 def collect_metrics() -> dict:
@@ -106,9 +106,9 @@ def collect_metrics() -> dict:
 
     complexity = get_complexity()
 
-    tests_passed, tests_failed = get_test_results()
-
-    coverage = get_test_coverage()
+    tests_passed, tests_failed, coverage = (
+        get_test_metrics()
+    )
 
     return {
         "complexity": complexity,
