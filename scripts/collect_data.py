@@ -1,5 +1,6 @@
 import subprocess
-
+from pathlib import Path
+from app.services.metrics_service import collect_metrics
 
 def run_git_command(command: list[str]) -> str:
     result = subprocess.run(
@@ -13,9 +14,16 @@ def run_git_command(command: list[str]) -> str:
 
 
 def get_repository() -> str:
-    return run_git_command(
-        ["git", "config", "--get", "remote.origin.url"]
+    result = subprocess.run(
+        ["git", "config", "--get", "remote.origin.url"],
+        capture_output=True,
+        text=True
     )
+
+    if result.returncode == 0 and result.stdout.strip():
+        return result.stdout.strip()
+
+    return Path.cwd().name
 
 
 def get_branch() -> str:
@@ -50,12 +58,63 @@ def get_code_diff() -> str:
 
     if commit_count <= 1:
         return run_git_command(
-            ["git", "show", "--format=", "--no-ext-diff", "HEAD"]
+            [
+                "git",
+                "show",
+                "--format=",
+                "--no-ext-diff",
+                "HEAD"
+            ]
         )
 
     return run_git_command(
-        ["git", "diff", "HEAD~1", "HEAD"]
+        [
+            "git",
+            "diff",
+            "HEAD~1",
+            "HEAD"
+        ]
     )
+
+
+def get_codebase() -> str:
+
+    files = run_git_command(
+        [
+            "git",
+            "ls-files",
+            "*.py"
+        ]
+    )
+
+    if not files:
+        return ""
+
+    codebase = []
+
+    for file_path in files.splitlines():
+
+        path = Path(file_path)
+
+        if not path.exists():
+            continue
+
+        try:
+            content = path.read_text(
+                encoding="utf-8"
+            )
+        except UnicodeDecodeError:
+            continue
+
+        codebase.append(
+            f"""
+===== {file_path} =====
+
+{content}
+"""
+        )
+
+    return "\n".join(codebase)
 
 
 def collect_git_data() -> dict:
@@ -63,13 +122,19 @@ def collect_git_data() -> dict:
     commit_count = get_commit_count()
 
     if commit_count <= 1:
+
         review_mode = "full"
+
         code_diff = None
+
         codebase = get_codebase()
 
     else:
+
         review_mode = "diff"
+
         code_diff = get_code_diff()
+
         codebase = None
 
     return {
@@ -84,18 +149,14 @@ def collect_git_data() -> dict:
     }
 
 
-def get_codebase() -> str:
-
-    return run_git_command(
-        [
-            "git",
-            "ls-files",
-            "*.py"
-        ]
-    )
-
-
 if __name__ == "__main__":
+
     data = collect_git_data()
 
-    print(data)
+    print("\n===== COLLECTED GIT DATA =====\n")
+
+    for key, value in data.items():
+
+        print(f"{key}:")
+        print(value)
+        print("\n" + "-" * 60)
