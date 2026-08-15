@@ -14,9 +14,11 @@ def test_analyzer_returns_structured_review(monkeypatch):
         metrics=PipelineMetrics(
             complexity=1.0,
             lint_issues=0,
+            security_issues=0,
             test_coverage=100.0,
             tests_passed=1,
             tests_failed=0,
+            risk_score=0.1,
         ),
     )
 
