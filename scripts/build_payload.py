@@ -1,11 +1,8 @@
 from pathlib import Path
 
-from app.models.schema import PipelineMetrics
-from app.models.schema import ReviewRequest
-
+from app.models.schema import PipelineMetrics, ReviewRequest
 from app.services.language_service import detect_language
 from app.services.metrics_service import collect_metrics
-
 from scripts.collect_data import collect_git_data
 
 

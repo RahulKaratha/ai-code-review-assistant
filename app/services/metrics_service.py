@@ -1,10 +1,8 @@
-
 import re
 import subprocess
 from pathlib import Path
-from app.services.language_service import (
-    detect_language
-)
+
+from app.services.language_service import detect_language
 
 
 def run_command(
@@ -16,7 +14,8 @@ def run_command(
         command,
         cwd=repository_path,
         capture_output=True,
-        text=True
+        text=True,
+        check=False
     )
 
 
@@ -167,12 +166,6 @@ def get_security_issues(
     high_match = re.search(
         r"High:\s+(\d+)",
         output
-    )
-
-    low = (
-        int(low_match.group(1))
-        if low_match
-        else 0
     )
 
     medium = (

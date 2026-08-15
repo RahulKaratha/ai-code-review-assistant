@@ -1,8 +1,8 @@
 import subprocess
 from pathlib import Path
-from app.services.language_service import (
-    detect_language
-)
+
+from app.services.language_service import detect_language
+
 
 def run_git_command(
     repository_path: Path,
@@ -33,7 +33,8 @@ def get_repository(
             "remote.origin.url"
         ],
         capture_output=True,
-        text=True
+        text=True,
+        check=False
     )
 
     if result.returncode == 0 and result.stdout.strip():

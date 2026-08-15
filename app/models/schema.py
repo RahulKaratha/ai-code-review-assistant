@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -32,8 +32,8 @@ class ReviewRequest(BaseModel):
         description="Review mode."
     )
 
-    code_diff: Optional[str] = None
-    codebase: Optional[str] = None
+    code_diff: str | None = None
+    codebase: str | None = None
 
     metrics: PipelineMetrics
 
@@ -82,7 +82,7 @@ class RepositoryReviewRequest(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("repository_url must not be empty.")
-        if not (v.startswith("http://") or v.startswith("https://") or v.startswith("git@")):
+        if not v.startswith(("http://", "https://", "git@")):
             raise ValueError("repository_url must be a valid HTTP, HTTPS, or SSH git URL.")
         return v
 

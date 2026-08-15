@@ -40,7 +40,7 @@ class GitService:
         ])
 
         try:
-            result = subprocess.run(
+            subprocess.run(
                 command,
                 capture_output=True,
                 text=True,
@@ -196,7 +196,8 @@ class GitService:
                 f"origin/{target_branch}"
             ],
             capture_output=True,
-            text=True
+            text=True,
+            check=False
         )
 
         return result.stdout

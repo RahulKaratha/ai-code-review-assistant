@@ -1,11 +1,8 @@
 from fastapi import APIRouter, HTTPException
+
+from app.models.schema import RepositoryReviewRequest, ReviewRequest, ReviewResponse
 from app.services.analyzer import CodeAnalyzer
 from app.services.git_service import GitService
-from app.models.schema import (
-    RepositoryReviewRequest,
-    ReviewRequest,
-    ReviewResponse
-)
 from scripts.build_payload import build_payload
 from scripts.collect_data import collect_git_data
 
@@ -34,7 +31,7 @@ def analyze_code(request: ReviewRequest):
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         raise HTTPException(
             status_code=503,
             detail=f"Analysis service unavailable: {exc}"
@@ -104,7 +101,7 @@ def review_repository(
                 detail=f"Failed to prepare repository data: {exc}"
             )
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             raise HTTPException(
                 status_code=500,
                 detail=f"Unexpected error building payload: {exc}"
@@ -116,7 +113,7 @@ def review_repository(
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc))
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             raise HTTPException(
                 status_code=503,
                 detail=f"Analysis service unavailable: {exc}"

@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 LANGUAGE_MAP = {
     ".py": "python",
     ".js": "javascript",
