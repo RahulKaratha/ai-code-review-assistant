@@ -153,11 +153,6 @@ def get_security_issues(
         + result.stderr
     )
 
-    low_match = re.search(
-        r"Low:\s+(\d+)",
-        output
-    )
-
     medium_match = re.search(
         r"Medium:\s+(\d+)",
         output
