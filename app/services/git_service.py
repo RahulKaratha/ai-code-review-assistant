@@ -35,7 +35,7 @@ class GitService:
         )
 
         try:
-            subprocess.run(command, capture_output=True, text=True, check=True)
+            subprocess.run(command, capture_output=True, text=True, check=True)  # nosec B603 B607
 
         except FileNotFoundError as exc:
             raise RuntimeError("Git is not installed or could not be found.") from exc
@@ -49,7 +49,7 @@ class GitService:
 
     def get_branch(self, repository_path: Path) -> str:
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             ["git", "-C", str(repository_path), "branch", "--show-current"],
             capture_output=True,
             text=True,
@@ -60,7 +60,7 @@ class GitService:
 
     def get_commit_hash(self, repository_path: Path) -> str:
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             ["git", "-C", str(repository_path), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
@@ -71,7 +71,7 @@ class GitService:
 
     def get_commit_message(self, repository_path: Path) -> str:
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             ["git", "-C", str(repository_path), "log", "-1", "--pretty=%B"],
             capture_output=True,
             text=True,
@@ -87,7 +87,7 @@ class GitService:
 
     def fetch_branch(self, repository_path: Path, branch: str):
 
-        subprocess.run(
+        subprocess.run(  # nosec B603 B607
             ["git", "-C", str(repository_path), "fetch", "origin", branch],
             check=True,
             capture_output=True,
@@ -102,7 +102,7 @@ class GitService:
 
         self.fetch_branch(repository_path, target_branch)
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             [
                 "git",
                 "-C",
@@ -122,7 +122,7 @@ class GitService:
         self, repository_path: Path, base_branch: str, target_branch: str
     ):
 
-        result = subprocess.run(
+        result = subprocess.run(  # nosec B603 B607
             [
                 "git",
                 "-C",

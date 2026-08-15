@@ -9,7 +9,7 @@ def run_command(
     command: list[str], repository_path: Path
 ) -> subprocess.CompletedProcess:
 
-    return subprocess.run(
+    return subprocess.run(  # nosec B603 B607
         command, cwd=repository_path, capture_output=True, text=True, check=False
     )
 

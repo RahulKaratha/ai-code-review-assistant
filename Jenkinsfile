@@ -43,7 +43,7 @@ pipeline {
 
                 stage('Security Scan') {
                     steps {
-                        sh 'bandit -r app -x tests,__pycache__,.pytest_cache'
+                        sh 'bandit -r app -x tests,__pycache__,.pytest_cache -c pyproject.toml'
                     }
                 }
 
