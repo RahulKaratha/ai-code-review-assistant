@@ -6,6 +6,7 @@ def test_analyzer_returns_structured_review(monkeypatch):
 
     request = ReviewRequest(
         repository="test-repository",
+        language="python",
         branch="main",
         commit_hash="abc123",
         commit_message="Test commit",
