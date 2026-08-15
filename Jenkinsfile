@@ -2,6 +2,11 @@ pipeline {
 
     agent none
 
+    environment {
+        LLM_API_KEY = credentials('llm-api-key')
+        LLM-MODEL = credentials('llm-model')
+    }
+
     options {
         buildDiscarder(logRotator(
             numToKeepStr: '20',
