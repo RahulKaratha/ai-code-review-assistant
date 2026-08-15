@@ -82,7 +82,7 @@ pipeline {
             environment {
                 DOCKER_IMAGE          = 'rahulkaratha/ai-code-review-assistant'
                 DOCKER_CONTAINER_NAME = 'ai-code-review-container'
-                EC2_HOST              = '18.60.214.249'
+                EC2_HOST              = '18.61.60.169'
                 EC2_USERNAME          = 'ec2-user'
             }
 
