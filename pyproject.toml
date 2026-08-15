@@ -1,2 +1,5 @@
 [tool.bandit]
 skips = ["B404"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
