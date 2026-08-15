@@ -4,7 +4,7 @@ pipeline {
 
     environment {
         LLM_API_KEY = credentials('llm-api-key')
-        LLM-MODEL = credentials('llm-model')
+        LLM_MODEL = credentials('llm-model')
     }
 
     options {
