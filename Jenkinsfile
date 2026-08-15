@@ -220,56 +220,58 @@ pipeline {
 
                                 } catch (Exception e) {
 
-                                    echo "Health check failed! Initiating rollback..."
+                                    echo 'Health check failed! Initiating rollback...'
 
                                     def previousImage = sh(
-                                        script: """
+                                        script: '''
                                             ssh -i "$PRIVATE_KEY_FILE" \
                                                 -o StrictHostKeyChecking=no \
                                                 ${EC2_USERNAME}@${EC2_HOST} \
                                                 "cat ~/.last_successful_image 2>/dev/null || true"
-                                        """,
+                                        ''',
                                         returnStdout: true
                                     ).trim()
 
                                     if (!previousImage) {
-                                        error("No successful deployment available for rollback.")
+                                        error('No successful deployment available for rollback.')
                                     }
 
                                     echo "Rolling back to ${previousImage}"
 
-                                    sh """
-                                        ssh -i "$PRIVATE_KEY_FILE" \
-                                            -o StrictHostKeyChecking=no \
-                                            ${EC2_USERNAME}@${EC2_HOST} '
+                                    withEnv(["ROLLBACK_IMAGE=${previousImage}"]) {
+                                        sh '''
+                                            ssh -i "$PRIVATE_KEY_FILE" \
+                                                -o StrictHostKeyChecking=no \
+                                                ${EC2_USERNAME}@${EC2_HOST} '
 
-                                            docker rm -f ${DOCKER_CONTAINER_NAME} || true
+                                                docker rm -f ${DOCKER_CONTAINER_NAME} || true
 
-                                            docker run -d \
-                                                --restart unless-stopped \
-                                                --name ${DOCKER_CONTAINER_NAME} \
-                                                --env-file ~/ai-code-review.env \
-                                                -p 80:8000 \
-                                                ${previousImage}
+                                                docker run -d \
+                                                    --restart unless-stopped \
+                                                    --name ${DOCKER_CONTAINER_NAME} \
+                                                    --env-file ~/ai-code-review.env \
+                                                    -p 80:8000 \
+                                                    '"${ROLLBACK_IMAGE}"'
 
-                                            echo "Waiting for rollback application..."
+                                                echo "Waiting for rollback application..."
 
-                                            for i in \\$(seq 1 12); do
-                                                if curl --fail http://localhost:80/health >/dev/null 2>&1; then
-                                                    echo "Rollback successful."
-                                                    exit 0
-                                                fi
+                                                for i in $(seq 1 12); do
+                                                    if curl --fail http://localhost:80/health >/dev/null 2>&1; then
+                                                        echo "Rollback successful."
+                                                        exit 0
+                                                    fi
 
-                                                echo "Rollback attempt \\$i/12 failed. Waiting 5 seconds..."
-                                                sleep 5
-                                            done
+                                                    echo "Rollback attempt $i/12 failed. Waiting 5 seconds..."
+                                                    sleep 5
+                                                done
 
-                                            echo "Rollback failed."
-                                            exit 1
-                                        '
-                                    """
+                                                echo "Rollback failed."
+                                                exit 1
+                                            '
+                                        '''
+                                    }
 
-                                    error("Deployment failed. Rollback completed successfully.")
+                                    error('Deployment failed. Rollback completed successfully.')
 
                                 }
                             }
