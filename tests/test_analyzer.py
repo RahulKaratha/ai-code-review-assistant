@@ -16,21 +16,18 @@ def test_analyzer_returns_structured_review(monkeypatch):
             lint_issues=0,
             test_coverage=100.0,
             tests_passed=1,
-            tests_failed=0
-        )
+            tests_failed=0,
+        ),
     )
 
     expected_review = {
         "overall_risk": "LOW",
         "summary": "No significant issues found.",
         "issues": [],
-        "positive_observations": [
-            "Simple function with low complexity."
-        ]
+        "positive_observations": ["Simple function with low complexity."],
     }
 
     class FakeLLMService:
-
         def generate_review(self, prompt):
             return expected_review
 

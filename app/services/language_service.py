@@ -12,18 +12,15 @@ LANGUAGE_MAP = {
     ".cc": "cpp",
     ".cs": "csharp",
     ".go": "go",
-    ".rs": "rust"
+    ".rs": "rust",
 }
 
 
-def detect_language(
-    repository_path: Path
-) -> str:
+def detect_language(repository_path: Path) -> str:
 
     extensions = {}
 
     for file in repository_path.rglob("*"):
-
         if not file.is_file():
             continue
 
@@ -32,19 +29,11 @@ def detect_language(
         if not extension:
             continue
 
-        extensions[extension] = (
-            extensions.get(extension, 0) + 1
-        )
+        extensions[extension] = extensions.get(extension, 0) + 1
 
     if not extensions:
         return "unknown"
 
-    dominant_extension = max(
-        extensions,
-        key=extensions.get
-    )
+    dominant_extension = max(extensions, key=extensions.get)
 
-    return LANGUAGE_MAP.get(
-        dominant_extension,
-        "unknown"
-    )
+    return LANGUAGE_MAP.get(dominant_extension, "unknown")

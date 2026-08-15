@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class PipelineMetrics(BaseModel):
-    
     complexity: float
 
     lint_issues: int
@@ -19,17 +18,16 @@ class PipelineMetrics(BaseModel):
 
     risk_score: float
 
+
 class ReviewRequest(BaseModel):
     repository: str
     language: str
     branch: str
     commit_hash: str
     commit_message: str
-    
 
-    review_mode: Literal["full", "diff","latest","branch"] = Field(
-        default="latest",
-        description="Review mode."
+    review_mode: Literal["full", "diff", "latest", "branch"] = Field(
+        default="latest", description="Review mode."
     )
 
     code_diff: str | None = None
@@ -40,23 +38,13 @@ class ReviewRequest(BaseModel):
 
 class ReviewIssue(BaseModel):
     category: str
-    severity: Literal[
-        "Low",
-        "Medium",
-        "High",
-        "Critical"
-    ]
+    severity: Literal["Low", "Medium", "High", "Critical"]
     description: str
     recommendation: str
 
 
 class ReviewResponse(BaseModel):
-    overall_risk: Literal[
-        "LOW",
-        "MEDIUM",
-        "HIGH",
-        "CRITICAL"
-    ]
+    overall_risk: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
     summary: str
 
@@ -64,8 +52,8 @@ class ReviewResponse(BaseModel):
 
     positive_observations: list[str]
 
-class RepositoryReviewRequest(BaseModel):
 
+class RepositoryReviewRequest(BaseModel):
     repository_url: str
 
     review_mode: Literal["latest", "full", "branch"] = "latest"
@@ -83,7 +71,9 @@ class RepositoryReviewRequest(BaseModel):
         if not v:
             raise ValueError("repository_url must not be empty.")
         if not v.startswith(("http://", "https://", "git@")):
-            raise ValueError("repository_url must be a valid HTTP, HTTPS, or SSH git URL.")
+            raise ValueError(
+                "repository_url must be a valid HTTP, HTTPS, or SSH git URL."
+            )
         return v
 
     @field_validator("base_branch", "target_branch", mode="before")
@@ -94,5 +84,9 @@ class RepositoryReviewRequest(BaseModel):
         return v
 
     def validate_branch_review(self) -> None:
-        if self.review_mode == "branch" and (not self.base_branch or not self.target_branch):
-            raise ValueError("base_branch and target_branch are required for branch review mode.")
+        if self.review_mode == "branch" and (
+            not self.base_branch or not self.target_branch
+        ):
+            raise ValueError(
+                "base_branch and target_branch are required for branch review mode."
+            )

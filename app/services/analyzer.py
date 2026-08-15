@@ -4,7 +4,6 @@ from app.utils.prompt_builder import build_review_prompt
 
 
 class CodeAnalyzer:
-
     def __init__(self):
         self.llm_service = LLMService()
 

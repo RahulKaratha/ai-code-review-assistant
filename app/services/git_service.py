@@ -5,19 +5,10 @@ from pathlib import Path
 
 
 class GitService:
-
     def __init__(self):
-        self.temp_root = Path(
-            tempfile.mkdtemp(
-                prefix="ai-code-review-"
-            )
-        )
+        self.temp_root = Path(tempfile.mkdtemp(prefix="ai-code-review-"))
 
-    def clone_repository(
-        self,
-        repository_url: str,
-        branch: str | None = None
-    ) -> Path:
+    def clone_repository(self, repository_url: str, branch: str | None = None) -> Path:
 
         repository_path = self.temp_root / "repository"
 
@@ -27,96 +18,64 @@ class GitService:
         ]
 
         if branch:
-            command.extend([
-                "--branch",
-                branch,
-            ])
-
-        command.extend([
-            "--depth",
-            "50",
-            repository_url,
-            str(repository_path),
-        ])
-
-        try:
-            subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                check=True
+            command.extend(
+                [
+                    "--branch",
+                    branch,
+                ]
             )
 
+        command.extend(
+            [
+                "--depth",
+                "50",
+                repository_url,
+                str(repository_path),
+            ]
+        )
+
+        try:
+            subprocess.run(command, capture_output=True, text=True, check=True)
+
         except FileNotFoundError as exc:
-            raise RuntimeError(
-                "Git is not installed or could not be found."
-            ) from exc
+            raise RuntimeError("Git is not installed or could not be found.") from exc
 
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(
-                f"Failed to clone repository: "
-                f"{exc.stderr.strip()}"
+                f"Failed to clone repository: {exc.stderr.strip()}"
             ) from exc
 
         return repository_path
 
-    def get_branch(
-        self,
-        repository_path: Path
-    ) -> str:
+    def get_branch(self, repository_path: Path) -> str:
 
         result = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(repository_path),
-                "branch",
-                "--show-current"
-            ],
+            ["git", "-C", str(repository_path), "branch", "--show-current"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         return result.stdout.strip()
 
-    def get_commit_hash(
-        self,
-        repository_path: Path
-    ) -> str:
+    def get_commit_hash(self, repository_path: Path) -> str:
 
         result = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(repository_path),
-                "rev-parse",
-                "HEAD"
-            ],
+            ["git", "-C", str(repository_path), "rev-parse", "HEAD"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         return result.stdout.strip()
 
-    def get_commit_message(
-        self,
-        repository_path: Path
-    ) -> str:
+    def get_commit_message(self, repository_path: Path) -> str:
 
         result = subprocess.run(
-            [
-                "git",
-                "-C",
-                str(repository_path),
-                "log",
-                "-1",
-                "--pretty=%B"
-            ],
+            ["git", "-C", str(repository_path), "log", "-1", "--pretty=%B"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
 
         return result.stdout.strip()
@@ -124,43 +83,24 @@ class GitService:
     def cleanup(self) -> None:
 
         if self.temp_root.exists():
-            shutil.rmtree(
-                self.temp_root,
-                ignore_errors=True
-            )
+            shutil.rmtree(self.temp_root, ignore_errors=True)
 
     def fetch_branch(self, repository_path: Path, branch: str):
 
         subprocess.run(
-            [
-                "git",
-                "-C",
-                str(repository_path),
-                "fetch",
-                "origin",
-                branch
-            ],
+            ["git", "-C", str(repository_path), "fetch", "origin", branch],
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
 
     def get_branch_diff(
-        self,
-        repository_path: Path,
-        base_branch: str,
-        target_branch: str
+        self, repository_path: Path, base_branch: str, target_branch: str
     ):
 
-        self.fetch_branch(
-            repository_path,
-            base_branch
-        )
+        self.fetch_branch(repository_path, base_branch)
 
-        self.fetch_branch(
-            repository_path,
-            target_branch
-        )
+        self.fetch_branch(repository_path, target_branch)
 
         result = subprocess.run(
             [
@@ -169,20 +109,17 @@ class GitService:
                 str(repository_path),
                 "diff",
                 f"origin/{base_branch}",
-                f"origin/{target_branch}"
+                f"origin/{target_branch}",
             ],
             check=True,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         return result.stdout
 
     def get_diff_stats(
-        self,
-        repository_path: Path,
-        base_branch: str,
-        target_branch: str
+        self, repository_path: Path, base_branch: str, target_branch: str
     ):
 
         result = subprocess.run(
@@ -193,11 +130,11 @@ class GitService:
                 "diff",
                 "--shortstat",
                 f"origin/{base_branch}",
-                f"origin/{target_branch}"
+                f"origin/{target_branch}",
             ],
             capture_output=True,
             text=True,
-            check=False
+            check=False,
         )
 
         return result.stdout

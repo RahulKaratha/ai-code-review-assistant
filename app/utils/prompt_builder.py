@@ -8,52 +8,32 @@ def build_review_prompt(request: ReviewRequest) -> str:
     metrics_section = []
 
     if metrics.complexity is not None:
-        metrics_section.append(
-            f"- Cyclomatic complexity: {metrics.complexity}"
-        )
+        metrics_section.append(f"- Cyclomatic complexity: {metrics.complexity}")
 
     if metrics.lint_issues is not None:
-        metrics_section.append(
-            f"- Lint issues: {metrics.lint_issues}"
-        )
+        metrics_section.append(f"- Lint issues: {metrics.lint_issues}")
 
     if metrics.security_issues is not None:
-        metrics_section.append(
-            f"- Security issues: {metrics.security_issues}"
-        )
+        metrics_section.append(f"- Security issues: {metrics.security_issues}")
 
     if metrics.test_coverage is not None:
-        metrics_section.append(
-            f"- Test coverage: {metrics.test_coverage}%"
-        )
+        metrics_section.append(f"- Test coverage: {metrics.test_coverage}%")
 
     if metrics.tests_passed is not None:
-        metrics_section.append(
-            f"- Tests passed: {metrics.tests_passed}"
-        )
+        metrics_section.append(f"- Tests passed: {metrics.tests_passed}")
 
     if metrics.tests_failed is not None:
-        metrics_section.append(
-            f"- Tests failed: {metrics.tests_failed}"
-        )
+        metrics_section.append(f"- Tests failed: {metrics.tests_failed}")
 
     if metrics.risk_score is not None:
-        metrics_section.append(
-            f"- Calculated risk score: {metrics.risk_score}"
-        )
+        metrics_section.append(f"- Calculated risk score: {metrics.risk_score}")
 
-    metrics_text = "\n".join(
-        metrics_section
-    )
+    metrics_text = "\n".join(metrics_section)
 
     if not metrics_text:
-        metrics_text = (
-            "No pipeline metrics are available "
-            "for this repository."
-        )
+        metrics_text = "No pipeline metrics are available for this repository."
 
     if request.review_mode == "full":
-        
         code_context = request.codebase or "No source code provided."
 
         analysis_type = """
@@ -71,7 +51,6 @@ def build_review_prompt(request: ReviewRequest) -> str:
     """
 
     elif request.review_mode == "branch":
-
         code_context = request.code_diff or "No code diff provided."
 
         analysis_type = """
@@ -88,7 +67,6 @@ def build_review_prompt(request: ReviewRequest) -> str:
     """
 
     else:
-
         code_context = request.code_diff or "No code diff provided."
 
         analysis_type = """
