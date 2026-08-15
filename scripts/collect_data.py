@@ -1,10 +1,16 @@
 import subprocess
 from pathlib import Path
-from app.services.metrics_service import collect_metrics
+from app.services.language_service import (
+    detect_language
+)
 
-def run_git_command(command: list[str]) -> str:
+def run_git_command(
+    repository_path: Path,
+    command: list[str]
+) -> str:
+
     result = subprocess.run(
-        command,
+        ["git", "-C", str(repository_path), *command],
         capture_output=True,
         text=True,
         check=True
@@ -13,9 +19,19 @@ def run_git_command(command: list[str]) -> str:
     return result.stdout.strip()
 
 
-def get_repository() -> str:
+def get_repository(
+    repository_path: Path
+) -> str:
+
     result = subprocess.run(
-        ["git", "config", "--get", "remote.origin.url"],
+        [
+            "git",
+            "-C",
+            str(repository_path),
+            "config",
+            "--get",
+            "remote.origin.url"
+        ],
         capture_output=True,
         text=True
     )
@@ -23,43 +39,78 @@ def get_repository() -> str:
     if result.returncode == 0 and result.stdout.strip():
         return result.stdout.strip()
 
-    return Path.cwd().name
+    return repository_path.name
 
 
-def get_branch() -> str:
+def get_branch(
+    repository_path: Path
+) -> str:
+
     return run_git_command(
-        ["git", "branch", "--show-current"]
+        repository_path,
+        [
+            "branch",
+            "--show-current"
+        ]
     )
 
 
-def get_commit_hash() -> str:
+def get_commit_hash(
+    repository_path: Path
+) -> str:
+
     return run_git_command(
-        ["git", "rev-parse", "HEAD"]
+        repository_path,
+        [
+            "rev-parse",
+            "HEAD"
+        ]
     )
 
 
-def get_commit_message() -> str:
+def get_commit_message(
+    repository_path: Path
+) -> str:
+
     return run_git_command(
-        ["git", "log", "-1", "--pretty=%B"]
+        repository_path,
+        [
+            "log",
+            "-1",
+            "--pretty=%B"
+        ]
     )
 
 
-def get_commit_count() -> int:
-    output = run_git_command(
-        ["git", "rev-list", "--count", "HEAD"]
+def get_commit_count(
+    repository_path: Path
+) -> int:
+
+    return int(
+        run_git_command(
+            repository_path,
+            [
+                "rev-list",
+                "--count",
+                "HEAD"
+            ]
+        )
     )
 
-    return int(output)
 
+def get_code_diff(
+    repository_path: Path
+) -> str:
 
-def get_code_diff() -> str:
-
-    commit_count = get_commit_count()
+    commit_count = get_commit_count(
+        repository_path
+    )
 
     if commit_count <= 1:
+
         return run_git_command(
+            repository_path,
             [
-                "git",
                 "show",
                 "--format=",
                 "--no-ext-diff",
@@ -68,8 +119,8 @@ def get_code_diff() -> str:
         )
 
     return run_git_command(
+        repository_path,
         [
-            "git",
             "diff",
             "HEAD~1",
             "HEAD"
@@ -77,11 +128,13 @@ def get_code_diff() -> str:
     )
 
 
-def get_codebase() -> str:
+def get_codebase(
+    repository_path: Path
+) -> str:
 
     files = run_git_command(
+        repository_path,
         [
-            "git",
             "ls-files",
             "*.py"
         ]
@@ -94,69 +147,85 @@ def get_codebase() -> str:
 
     for file_path in files.splitlines():
 
-        path = Path(file_path)
+        path = repository_path / file_path
 
         if not path.exists():
             continue
 
         try:
+
             content = path.read_text(
                 encoding="utf-8"
             )
-        except UnicodeDecodeError:
-            continue
 
-        codebase.append(
-            f"""
+            codebase.append(
+                f"""
 ===== {file_path} =====
 
 {content}
 """
-        )
+            )
+
+        except UnicodeDecodeError:
+            continue
 
     return "\n".join(codebase)
 
 
-def collect_git_data() -> dict:
+def collect_git_data(
+    repository_path: Path
+) -> dict:
 
-    commit_count = get_commit_count()
+    commit_count = get_commit_count(
+        repository_path
+    )
 
     if commit_count <= 1:
 
         review_mode = "full"
 
-        code_diff = None
+        codebase = get_codebase(
+            repository_path
+        )
 
-        codebase = get_codebase()
+        code_diff = None
 
     else:
 
         review_mode = "diff"
 
-        code_diff = get_code_diff()
-
         codebase = None
 
+        code_diff = get_code_diff(
+            repository_path
+        )
+
     return {
-        "repository": get_repository(),
-        "branch": get_branch(),
-        "commit_hash": get_commit_hash(),
-        "commit_message": get_commit_message(),
+        "repository": get_repository(
+            repository_path
+        ),
+        "language": detect_language(
+            repository_path
+        ),
+        "branch": get_branch(
+            repository_path
+        ),
+        "commit_hash": get_commit_hash(
+            repository_path
+        ),
+        "commit_message": get_commit_message(
+            repository_path
+        ),
         "review_mode": review_mode,
         "code_diff": code_diff,
-        "codebase": codebase,
-        "commit_count": commit_count
+        "codebase": codebase
     }
 
 
 if __name__ == "__main__":
 
-    data = collect_git_data()
+    data = collect_git_data(
+        Path.cwd()
+    )
 
-    print("\n===== COLLECTED GIT DATA =====\n")
-
-    for key, value in data.items():
-
-        print(f"{key}:")
-        print(value)
-        print("\n" + "-" * 60)
+    print(data)

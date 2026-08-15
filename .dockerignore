@@ -1,0 +1,17 @@
+.git
+.gitignore
+.pytest_cache
+.coverage
+.ruff_cache
+coverage.xml
+htmlcov
+__pycache__
+*.pyc
+*.pyo
+tests/
+venv/
+.env
+README.md
+Dockerfile.ci
+Jenkinsfile
+trivy/

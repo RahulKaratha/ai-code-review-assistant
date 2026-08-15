@@ -1,9 +1,16 @@
+import os
+
 import requests
 
 from scripts.build_payload import build_payload
 
 
-API_URL = "http://127.0.0.1:8000/analyze"
+
+
+API_URL = os.getenv(
+    "AI_REVIEW_API_URL",
+    "http://127.0.0.1:8000/analyze"
+)
 
 
 def send_review_request():

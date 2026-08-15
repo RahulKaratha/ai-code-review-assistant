@@ -1,24 +1,34 @@
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PipelineMetrics(BaseModel):
-    complexity: Optional[float] = None
-    lint_issues: int = 0
-    test_coverage: Optional[float] = None
-    tests_passed: Optional[int] = None
-    tests_failed: Optional[int] = None
+    
+    complexity: float
 
+    lint_issues: int
+
+    security_issues: int
+
+    test_coverage: float
+
+    tests_passed: int
+
+    tests_failed: int
+
+    risk_score: float
 
 class ReviewRequest(BaseModel):
     repository: str
+    language: str
     branch: str
     commit_hash: str
     commit_message: str
+    
 
-    review_mode: Literal["full", "diff"] = Field(
-        default="diff",
+    review_mode: Literal["full", "diff","latest","branch"] = Field(
+        default="latest",
         description="Review mode."
     )
 
@@ -53,3 +63,36 @@ class ReviewResponse(BaseModel):
     issues: list[ReviewIssue]
 
     positive_observations: list[str]
+
+class RepositoryReviewRequest(BaseModel):
+
+    repository_url: str
+
+    review_mode: Literal["latest", "full", "branch"] = "latest"
+
+    branch: str = "main"
+
+    base_branch: str | None = None
+
+    target_branch: str | None = None
+
+    @field_validator("repository_url")
+    @classmethod
+    def validate_repository_url(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("repository_url must not be empty.")
+        if not (v.startswith("http://") or v.startswith("https://") or v.startswith("git@")):
+            raise ValueError("repository_url must be a valid HTTP, HTTPS, or SSH git URL.")
+        return v
+
+    @field_validator("base_branch", "target_branch", mode="before")
+    @classmethod
+    def validate_branch_names(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("Branch name must not be blank.")
+        return v
+
+    def validate_branch_review(self) -> None:
+        if self.review_mode == "branch" and (not self.base_branch or not self.target_branch):
+            raise ValueError("base_branch and target_branch are required for branch review mode.")

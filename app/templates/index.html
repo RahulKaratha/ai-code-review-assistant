@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Code Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <h1>AI Code <span>Review</span></h1>
+      <p>Semantic code analysis powered by AI</p>
+    </header>
+
+    <div class="card">
+      <form id="review-form" autocomplete="off">
+
+        <div class="form-group">
+          <label for="repository_url">Repository URL</label>
+          <input
+            id="repository_url"
+            type="url"
+            placeholder="https://github.com/owner/repo"
+            required
+          />
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label for="review_mode">Review Mode</label>
+            <select id="review_mode">
+              <option value="latest">Latest Commit</option>
+              <option value="full">Full Repository</option>
+              <option value="branch">Branch Diff</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="branch">Branch</label>
+            <input id="branch" type="text" placeholder="main" />
+          </div>
+        </div>
+
+        <div id="branch-fields">
+          <div class="row">
+            <div class="form-group">
+              <label for="base_branch">Base Branch</label>
+              <input id="base_branch" type="text" placeholder="main" />
+            </div>
+            <div class="form-group">
+              <label for="target_branch">Target Branch</label>
+              <input id="target_branch" type="text" placeholder="feature/my-branch" />
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn">Run Review</button>
+
+      </form>
+    </div>
+
+    <div id="error-box"></div>
+
+    <div id="spinner" class="spinner">Cloning repository and analysing code…</div>
+
+    <div id="results">
+      <div class="card">
+        <div class="result-header">
+          <h2>Review Result</h2>
+          <div id="result-risk"></div>
+        </div>
+        <p class="summary" id="result-summary"></p>
+
+        <div class="section-title">Issues</div>
+        <div id="result-issues"></div>
+
+        <div class="section-title" style="margin-top:1.25rem">Positive Observations</div>
+        <ul class="positives" id="result-positives"></ul>
+      </div>
+    </div>
+
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
